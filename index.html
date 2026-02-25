@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>SISTEMA PNC - </title>
+    <title>SISTEMA PNC - INVENTARIOS</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -14,7 +14,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
     <style>
-       
         :root {
             --bg-deep: #020204;
             --bg-panel: rgba(20, 20, 25, 0.7);
@@ -146,17 +145,7 @@
         .dock-btn.active { color: var(--neon-cyan); transform: translateY(-10px) scale(1.1); text-shadow: 0 0 10px var(--neon-cyan); }
         .dock-btn span { display: block; font-size: 0.6rem; font-weight: 600; margin-top: 2px; }
         
-        /* Contenedor del video */
-        #reader { 
-            border: 3px solid var(--neon-cyan); 
-            border-radius: 15px; 
-            margin-bottom: 20px; 
-            display: none; 
-            box-shadow: 0 0 30px var(--neon-cyan); 
-            width: 100%; 
-            overflow: hidden; 
-            background: #000;
-        }
+        #reader { border: 3px solid var(--neon-cyan); border-radius: 15px; margin-bottom: 20px; display: none; box-shadow: 0 0 30px var(--neon-cyan); width: 100%; overflow: hidden; background: #000; }
         
         #cameraError {
             display: none;
@@ -472,12 +461,19 @@
     }
 
     // =========================================================================
-    // LÓGICA DE PASTAS (VALIDACIÓN)
+    // NUEVA LÓGICA DE PASTAS (VALIDACIÓN RESTRINGIDA MC/PAST)
     // =========================================================================
     function esPastaRestringida(descripcion) {
         if (!descripcion) return false;
-        const descUpper = descripcion.toUpperCase();
-        return descUpper.includes("MCMACORNI") || descUpper.includes("MACARRON") || descUpper.includes("BARILLA") || descUpper.includes("YERMINA");
+        const descUpper = descripcion.trim().toUpperCase();
+        
+        // 1. Si empieza estrictamente con "PAST"
+        if (descUpper.startsWith("PAST")) return true;
+        
+        // 2. Si contiene cualquiera de estas palabras clave en cualquier lado
+        const palabrasClave = ["PASTA YE", "ADER MC", "MAYO MC", "MC", "MACARRON", "BARILLA", "YERMINA", "MCMACORNI"];
+        
+        return palabrasClave.some(palabra => descUpper.includes(palabra));
     }
 
     function checkInputManual() {
@@ -489,7 +485,7 @@
             const isRI = qr.startsWith("RI"); 
 
             if (isPasta && !isRI && (qr.startsWith("RC") || qr.startsWith("DT"))) {
-                alert("⚠️ ALTO: Este producto (Pastas) DEBE ir en RIDICKA o RIHERDEZ.");
+                alert("⚠️ ALTO: Este producto SOLO PUEDE IR EN RIDICKA o RIHERDEZ.");
                 document.getElementById('inputQR').value = ""; 
                 document.getElementById('inputQR').style.borderColor = "var(--neon-pink)";
                 document.getElementById('inputIncidencia').innerHTML = "<option value='Sin Especificar'>---</option>";
@@ -497,7 +493,7 @@
             }
 
             if (!isPasta && isRI) {
-                alert("⚠️ ALTO: La imputabilidad RI es EXCLUSIVA para pastas.");
+                alert("⚠️ ALTO: La imputabilidad RI es EXCLUSIVA para pastas/McCormick.");
                 document.getElementById('inputQR').value = ""; 
                 document.getElementById('inputQR').style.borderColor = "var(--neon-pink)";
                 document.getElementById('inputIncidencia').innerHTML = "<option value='Sin Especificar'>---</option>";
@@ -722,8 +718,8 @@
 
         const isPasta = esPastaRestringida(desc);
         const isRI = qr.startsWith("RI");
-        if (isPasta && !isRI) return alert("⚠️ ALTO: Las pastas DEBEN ir en RIDICKA o RIHERDEZ.");
-        if (!isPasta && isRI) return alert("⚠️ ALTO: Las imputabilidades RI solo son para pastas.");
+        if (isPasta && !isRI) return alert("⚠️ ALTO: Este producto SOLO PUEDE IR EN RIDICKA o RIHERDEZ.");
+        if (!isPasta && isRI) return alert("⚠️ ALTO: La imputabilidad RI solo es para pastas/McCormick.");
 
         document.getElementById('spinnerText').innerText = "GUARDANDO...";
         document.getElementById('loadingSpinner').style.display = 'flex';
