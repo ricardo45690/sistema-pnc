@@ -460,46 +460,10 @@
         if (changed) localStorage.setItem('PNC_DB_FINAL', JSON.stringify(localDB));
     }
 
-    // =========================================================================
-    // NUEVA LÓGICA DE PASTAS (VALIDACIÓN RESTRINGIDA MC/PAST)
-    // =========================================================================
-    function esPastaRestringida(descripcion) {
-        if (!descripcion) return false;
-        const descUpper = descripcion.trim().toUpperCase();
-        
-        // 1. Si empieza estrictamente con "PAST"
-        if (descUpper.startsWith("PAST")) return true;
-        
-        // 2. Si contiene cualquiera de estas palabras clave en cualquier lado
-        const palabrasClave = ["PASTA YE", "ADER MC", "MAYO MC", "MC", "MACARRON", "BARILLA", "YERMINA", "MCMACORNI"];
-        
-        return palabrasClave.some(palabra => descUpper.includes(palabra));
-    }
-
     function checkInputManual() {
         const qr = document.getElementById('inputQR').value.trim().toUpperCase();
-        const descProducto = document.getElementById('inputDesc').value; 
 
         if(qr) {
-            const isPasta = esPastaRestringida(descProducto);
-            const isRI = qr.startsWith("RI"); 
-
-            if (isPasta && !isRI && (qr.startsWith("RC") || qr.startsWith("DT"))) {
-                alert("⚠️ ALTO: Este producto SOLO PUEDE IR EN RIDICKA o RIHERDEZ.");
-                document.getElementById('inputQR').value = ""; 
-                document.getElementById('inputQR').style.borderColor = "var(--neon-pink)";
-                document.getElementById('inputIncidencia').innerHTML = "<option value='Sin Especificar'>---</option>";
-                return; 
-            }
-
-            if (!isPasta && isRI) {
-                alert("⚠️ ALTO: La imputabilidad RI es EXCLUSIVA para pastas/McCormick.");
-                document.getElementById('inputQR').value = ""; 
-                document.getElementById('inputQR').style.borderColor = "var(--neon-pink)";
-                document.getElementById('inputIncidencia').innerHTML = "<option value='Sin Especificar'>---</option>";
-                return;
-            }
-
             const sel = document.getElementById('inputIncidencia');
             sel.innerHTML = "";
             const key = Object.keys(damageMap).find(k => qr.includes(k));
@@ -715,11 +679,6 @@
         const desc = document.getElementById('inputDesc').value;
         
         if(!qr || !dun) return alert("❌ FALTAN DATOS.");
-
-        const isPasta = esPastaRestringida(desc);
-        const isRI = qr.startsWith("RI");
-        if (isPasta && !isRI) return alert("⚠️ ALTO: Este producto SOLO PUEDE IR EN RIDICKA o RIHERDEZ.");
-        if (!isPasta && isRI) return alert("⚠️ ALTO: La imputabilidad RI solo es para pastas/McCormick.");
 
         document.getElementById('spinnerText').innerText = "GUARDANDO...";
         document.getElementById('loadingSpinner').style.display = 'flex';
